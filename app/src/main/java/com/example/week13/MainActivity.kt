@@ -125,6 +125,5 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             "Yaw = ${yaw.toInt()}\nPitch = ${pitch.toInt()}\nRoll = ${roll.toInt()}"
     }
 
-    override fun onAccuracyChanged(p0: Sensor?, p1: Int) {
-    }
+    override fun onAccuracyChanged(p0: Sensor?, p1: Int) { }
 }
