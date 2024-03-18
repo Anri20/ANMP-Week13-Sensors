@@ -21,6 +21,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
     private var accelerometerSensor: Sensor? = null
     private var geomagneticSensor: Sensor? = null
+    private var lightSensor: Sensor? = null
 
     private var previousV: Float? = null
     private var stepCount: Int = 0
@@ -32,7 +33,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
         sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
         accelerometerSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
-        geomagneticSensor = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD)
+        lightSensor = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT)
     }
 
     override fun onResume() {
@@ -59,6 +60,17 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         } else {
             Toast.makeText(this, "No Magnetic Field Sensor detected", Toast.LENGTH_SHORT).show()
         }
+
+        if (lightSensor != null) {
+            Toast.makeText(this, "Light Sensor detected", Toast.LENGTH_SHORT).show()
+            sensorManager.registerListener(
+                this,
+                lightSensor,
+                SensorManager.SENSOR_DELAY_FASTEST
+            )
+        } else {
+            Toast.makeText(this, "No Light Sensor detected", Toast.LENGTH_SHORT).show()
+        }
     }
 
     override fun onPause() {
@@ -69,10 +81,6 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     override fun onSensorChanged(p0: SensorEvent?) {
         p0?.let {
             when (it.sensor.type) {
-                Sensor.TYPE_MAGNETIC_FIELD -> {
-                    magneticReading = it.values
-                }
-
                 Sensor.TYPE_ACCELEROMETER -> {
                     accelerometerReading = it.values
                     var x = it.values[0]
@@ -90,6 +98,14 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
                         }
                     }
                     previousV = v
+                }
+
+                Sensor.TYPE_MAGNETIC_FIELD -> {
+                    magneticReading = it.values
+                }
+
+                Sensor.TYPE_LIGHT -> {
+                    binding.txtLight.text = it.values[0].toString()
                 }
             }
         }
