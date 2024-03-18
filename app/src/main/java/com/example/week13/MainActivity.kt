@@ -8,6 +8,7 @@ import android.hardware.SensorManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatDelegate
 import com.example.week13.databinding.ActivityMainBinding
 import kotlin.math.pow
 import kotlin.math.sqrt
@@ -22,6 +23,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     private var accelerometerSensor: Sensor? = null
     private var geomagneticSensor: Sensor? = null
     private var lightSensor: Sensor? = null
+    private var proximitySensor: Sensor? = null
 
     private var previousV: Float? = null
     private var stepCount: Int = 0
@@ -34,11 +36,13 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
         accelerometerSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
         lightSensor = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT)
+        proximitySensor = sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY)
     }
 
     override fun onResume() {
         super.onResume()
 
+//        Accelerometer Sensor
         if (accelerometerSensor != null) {
             Toast.makeText(this, "Accelerometer Sensor detected", Toast.LENGTH_SHORT).show()
             sensorManager.registerListener(
@@ -50,6 +54,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             Toast.makeText(this, "No Accelerometer Sensor detected", Toast.LENGTH_SHORT).show()
         }
 
+//        Geomagnetic Sensor
         if (geomagneticSensor != null) {
             Toast.makeText(this, "Magnetic Field Sensor detected", Toast.LENGTH_SHORT).show()
             sensorManager.registerListener(
@@ -61,6 +66,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             Toast.makeText(this, "No Magnetic Field Sensor detected", Toast.LENGTH_SHORT).show()
         }
 
+//        Light Sensor
         if (lightSensor != null) {
             Toast.makeText(this, "Light Sensor detected", Toast.LENGTH_SHORT).show()
             sensorManager.registerListener(
@@ -70,6 +76,18 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             )
         } else {
             Toast.makeText(this, "No Light Sensor detected", Toast.LENGTH_SHORT).show()
+        }
+
+//        Proximity Sensor
+        if (proximitySensor != null) {
+            Toast.makeText(this, "Proximity Sensor detected", Toast.LENGTH_SHORT).show()
+            sensorManager.registerListener(
+                this,
+                proximitySensor,
+                SensorManager.SENSOR_DELAY_FASTEST
+            )
+        } else {
+            Toast.makeText(this, "No Proximity Sensor detected", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -106,6 +124,13 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
                 Sensor.TYPE_LIGHT -> {
                     binding.txtLight.text = it.values[0].toString()
+                }
+
+                Sensor.TYPE_PROXIMITY -> {
+                    binding.txtProximity.text = it.values[0].toString()
+                    if (it.values[0] <= 0.0){
+                        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+                    }
                 }
             }
         }
