@@ -17,8 +17,10 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
     private lateinit var sensorManager: SensorManager
     private var accelerometerReading = FloatArray(3)
+    private var magneticReading = FloatArray(3)
 
     private var accelerometerSensor: Sensor? = null
+    private var geomagneticSensor: Sensor? = null
 
     private var previousV: Float? = null
     private var stepCount: Int = 0
@@ -30,6 +32,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
         sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
         accelerometerSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
+        geomagneticSensor = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD)
     }
 
     override fun onResume() {
@@ -43,7 +46,18 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
                 SensorManager.SENSOR_DELAY_FASTEST
             )
         } else {
-            Toast.makeText(this, "Accelerometer Sensor detected", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "No Accelerometer Sensor detected", Toast.LENGTH_SHORT).show()
+        }
+
+        if (geomagneticSensor != null) {
+            Toast.makeText(this, "Magnetic Field Sensor detected", Toast.LENGTH_SHORT).show()
+            sensorManager.registerListener(
+                this,
+                geomagneticSensor,
+                SensorManager.SENSOR_DELAY_FASTEST
+            )
+        } else {
+            Toast.makeText(this, "No Magnetic Field Sensor detected", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -55,6 +69,10 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     override fun onSensorChanged(p0: SensorEvent?) {
         p0?.let {
             when (it.sensor.type) {
+                Sensor.TYPE_MAGNETIC_FIELD -> {
+                    magneticReading = it.values
+                }
+
                 Sensor.TYPE_ACCELEROMETER -> {
                     accelerometerReading = it.values
                     var x = it.values[0]
@@ -66,7 +84,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
                     previousV?.let {
                         var diff = v - it
-                        if(diff > 6){
+                        if (diff > 6) {
                             stepCount++
                             binding.txtStep.text = "Steps: $stepCount"
                         }
@@ -75,9 +93,22 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
                 }
             }
         }
+
+        var rotationMatrix = FloatArray(9)
+        var orientationAngles = FloatArray(3)
+
+        SensorManager.getRotationMatrix(rotationMatrix, null, accelerometerReading, magneticReading)
+        SensorManager.getOrientation(rotationMatrix, orientationAngles)
+
+//        Yaw and Azimuth is the same thing
+        var yaw = Math.toDegrees(orientationAngles[0].toDouble())
+        var pitch = Math.toDegrees(orientationAngles[1].toDouble())
+        var roll = Math.toDegrees(orientationAngles[2].toDouble())
+
+        binding.txtGyro.text =
+            "Yaw = ${yaw.toInt()}\nPitch = ${pitch.toInt()}\nRoll = ${roll.toInt()}"
     }
 
     override fun onAccuracyChanged(p0: Sensor?, p1: Int) {
-        TODO("Not yet implemented")
     }
 }
